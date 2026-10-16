@@ -1,0 +1,16 @@
+[package]
+name = "vampire_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+macroquad = "0.4"
+
+[package.metadata.android]
+package_name = "com.sodiq.vampiresurvivor"
+package_label = "Vampire Survivor"
+fullscreen = true
+orientation = "sensorLandscape"
+icon = "icon"
+min_sdk = 21
+target_sdk = 33

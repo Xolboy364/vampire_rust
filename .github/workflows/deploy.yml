@@ -1,0 +1,58 @@
+name: Build WASM and APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Build WASM
+        run: cargo build --target wasm32-unknown-unknown --release
+
+      - name: Prepare Web Assets
+        run: |
+          mkdir -p dist
+          cp target/wasm32-unknown-unknown/release/vampire_rust.wasm dist/
+          curl -o dist/mq_js_bundle.js https://raw.githubusercontent.com/not-flodd/macroquad/master/js/mq_js_bundle.js
+          cat << 'HTML' > dist/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="utf-8">
+              <title>Vampire Survivor Rust</title>
+              <style>
+                  html, body, canvas {
+                      margin: 0;
+                      padding: 0;
+                      width: 100%;
+                      height: 100%;
+                      overflow: hidden;
+                      background: black;
+                  }
+              </style>
+          </head>
+          <body>
+              <canvas id="glcanvas" tabindex='1'></canvas>
+              <script src="mq_js_bundle.js"></script>
+              <script>
+                  load("vampire_rust.wasm");
+              </script>
+          </body>
+          </html>
+          HTML
+
+      - name: Upload WASM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: dist/
